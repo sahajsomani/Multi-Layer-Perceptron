@@ -5,7 +5,7 @@ package learn.nn.core;
  * activation function.
  */
 public class PerceptronUnit extends NeuronUnit {
-	
+
 	/**
 	 * The activation function for a Perceptron is a hard 0/1 threshold
 	 * at z=0. (AIMA Fig 18.7)
@@ -18,30 +18,19 @@ public class PerceptronUnit extends NeuronUnit {
 			return 0;
 		}
 	}
-	
+
 	/**
 	 * Update this unit's weights using the Perceptron learning
 	 * rule (AIMA Eq 18.7).
 	 * Remember: If there are n input attributes in vector x,
-	 * then there are n+1 weights including the bias weight w_0. 
+	 * then there are n+1 weights including the bias weight w_0.
 	 */
 	@Override
-	public void update(double[] x, double y, double alpha) {
+	public void update(double[] x, double y, double alpha) { //x is the array of weights. y is the error of the child
 		// This must be implemented by you
-		
-//		double wx = this.h_w(x);
-//		int i = 0;
-//		
-//		for(Connection c : this.incomingConnections) {
-//			c.weight = c.weight + (alpha*(y-wx)*x[i]);
-//			i++;
-//		}
-		
-		double wx = this.h_w(x);
-		for (int i=0; i < this.incomingConnections.size(); i++) {
-			double wi = this.incomingConnections.get(i).weight;
-			double xi = (i == 0) ? 1.0 : x[i-1];
-			setWeight(i, wi + (alpha*(y-wx)*xi));
-		}
+		//w_ij <- w_ij + alpha * a_i * delta_j
+		double w_ij = this.incomingConnections.get((int)y).weight;
+		double a_i = (y == 0) ? 1.0 : this.incomingConnections.get((int)y).src.getOutput();
+		this.setWeight((int)y, w_ij + alpha * a_i * this.delta);
 	} //end update
 }

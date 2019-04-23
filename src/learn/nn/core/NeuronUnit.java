@@ -6,11 +6,11 @@ package learn.nn.core;
  * since that will be added automatically.
  */
 abstract public class NeuronUnit extends Unit {
-	
+
 	public NeuronUnit() {
 		new Connection(new ConstantUnit(1.0), this);
 	}
-	
+
 	/**
 	 * Return the weight for this NeuronUnit's i'th input
 	 * (where input 0 is the constant bias).
@@ -18,7 +18,7 @@ abstract public class NeuronUnit extends Unit {
 	public double getWeight(int i) {
 		return this.incomingConnections.get(i).weight;
 	}
-	
+
 	/**
 	 * Set the weight for this NeuronUnit's i'th input
 	 * (where input 0 is the constant bias).
@@ -26,12 +26,12 @@ abstract public class NeuronUnit extends Unit {
 	public void setWeight(int i, double w) {
 		this.incomingConnections.get(i).weight = w;
 	}
-	
+
 	/**
 	 * This NeuronUnit's output value.
 	 */
 	protected double output = 0.0;
-	
+
 	/**
 	 * Return the output value of this NeuronUnit.
 	 */
@@ -52,7 +52,7 @@ abstract public class NeuronUnit extends Unit {
 		}
 		return sum;
 	}
-	
+
 	/**
 	 * Return h_w(x) = Threshold(w \cdot [1,x])
 	 */
@@ -65,7 +65,7 @@ abstract public class NeuronUnit extends Unit {
 		}
 		return activation(wdotx);
 	}
-	
+
 	/**
 	 * ``Each unit j first computes a weighted sum of its inputs.
 	 * Then it applies an activation function g to this sum to
@@ -79,13 +79,13 @@ abstract public class NeuronUnit extends Unit {
 		//System.out.println("NeuronUnit.run: a_j=" + a_j);
 		this.output = a_j;
 	}
-	
+
 	/**
 	 * The activation (threshold) function used by this NeuronUnit.
 	 * This method must be specified by subclassses.
 	 */
 	abstract public double activation(double in);
-	
+
 	/**
 	 * Update the weights of this NeuronUnit using the given
 	 * input values, the given output value, and learning rate (alpha).
@@ -98,5 +98,5 @@ abstract public class NeuronUnit extends Unit {
 	 * Error term for this NeuronUnit, used during backprop.
 	 */
 	public double delta;
-	
+
 }

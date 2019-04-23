@@ -12,7 +12,7 @@ import learn.nn.core.Example;
  * (AIMA Section 18.7.3).
  */
 abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeuralNetwork {
-	
+
 	/**
 	 * Construct and return a new MultiLayerFeedForwardNeuralNetwork with the given
 	 * layers of Units (InputUnits in the first layer, LogisticUnits in other layers).
@@ -22,7 +22,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 	public MultiLayerFeedForwardNeuralNetwork(Unit[][] layers) {
 		super(layers);
 	}
-	
+
 	/**
 	 * Construct and return a new MultiLayerFeedForwardNeuralNetwork with the given
 	 * number of input units, hidden units (array of lengths, one for each layer),
@@ -56,7 +56,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			}
 		}
 	}
-	
+
 	/**
 	 * Construct and return a new MultiLayerFeedForwardNeuralNetwork with the given
 	 * number of input units, a single hidden layer of the given length,
@@ -65,7 +65,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 	public MultiLayerFeedForwardNeuralNetwork(int ninputs, int nhiddens, int noutputs) {
 		this(ninputs, new int[]{ nhiddens }, noutputs);
 	}
-	
+
 	/**
 	 * Print this MultiLayerFeedForwardNeuralNetwork to stdout.
 	 * All we print the weights of each unit in each non-input layer in
@@ -85,7 +85,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			}
 		}
 	}
-	
+
 	/**
 	 * Output of a MultiLayerFeedForwardNeuralNetwork is the index of output unit
 	 * (i.e., class label) with the maximum activation.
@@ -118,7 +118,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			notifyTrainingEpochCompleted(epoch);
 		}
 	}
-	
+
 	/**
 	 * AIMA Fig 18.24 says weights should each be initialized to
 	 * ``a small random number.'' WTF? It also has that step inside
@@ -137,7 +137,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			}
 		}
 	}
-	
+
 	protected Random random = new Random();
 
 	/**
@@ -151,7 +151,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 		propagate(example);
 		backprop(example, alpha);
 	}
-	
+
 	/**
 	 * AIMA Fig 18.14: Body of main loop, step 1:
 	 * ``Propagate the inputs forward to compute the outputs.''
@@ -173,7 +173,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			}
 		}
 	}
-		
+
 	/**
 	 * AIMA Fig 18.14 body of loop after propagating inputs forward:
 	 * (2) Computing the error vector delta
@@ -181,73 +181,72 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 	 * (4) ``Update every weight in network using deltas''
 	 */
 	public void backprop(Example example, double alpha) {
-		ArrayList<ArrayList<Double>> errors = new ArrayList<ArrayList<Double>>();
-		for(int i = 0; i < this.layers.length; i++) {
-			errors.add(new ArrayList<Double>());
-			for(int j = 0; j < this.layers[i].length; j++) {
-				errors.get(i).add(0.0);
-			}
-		}
-		
+
 		// This must be implemented by you
 
 		// for each node j in the output layer do
 		//     Delta[j] <- g'(in_j) \times (y_j - a_j)
 		// for l = L-1 to 1 do
-		//     for each node i in layer l do 
+		//     for each node i in layer l do
 		//         Delta[i] <- g'(in_i) * \sum_j w_ij Delta[j]
 		// for each weight w_ij in network do
 		//     w_ij <- w_ij + alpha * a_i * delta_j
-		
+
 		NeuronUnit[] output = this.getOutputUnits();
-		double[] delta_output = new double[output.length];
-		
+
 		// for each node j in the output layer do
 		//     Delta[j] <- g'(in_j) \times (y_j - a_j)
 		for(int j = 0; j < output.length; j++) {
-			double z = output[j].getInputSum();
-			double g = output[j].activation(z);
+			output[j].run();
+			double g = output[j].getOutput();
 			double gPrime = g*(1-g);
 			double a = output[j].getOutput();
 			double y = example.outputs[j];
 			double error = y - a;
-			errors.get(this.layers.length - 1).set(j, gPrime * error);
+			output[j].delta = gPrime * error;
 		} //end loop 1
-		
+
 		// for l = L-1 to 1 do
-		//     for each node i in layer l do 
+		//     for each node i in layer l do
 		//         Delta[i] <- g'(in_i) * \sum_j w_ij Delta[j]
 		int layers = this.getNumLayers();
 		for(int l = layers - 2; l > 0; l--) {
 			NeuronUnit[] layer = this.getLayerUnits(l);
-			
+			NeuronUnit[] layerPlus1 = this.getLayerUnits(l + 1);
 			for(int i = 0; i < layer.length; i++) {
-				double z = layer[i].getInputSum();
-				double g = layer[i].activation(z);
+				layer[i].run();
+				double g = layer[i].getOutput();
 				double gPrime = g*(1-g);
-				
 				double wTimesDelta = 0;
 				for(int j = 0; j < layer[i].outgoingConnections.size(); j++) {
-					wTimesDelta += layer[i].getWeight(j) * errors.get(l+1).get(j); 
+					wTimesDelta += layer[i].getWeight(j) * layerPlus1[j].delta;
 				}
-				errors.get(l).set(i, gPrime * wTimesDelta);
+				layer[i].delta = wTimesDelta * gPrime;
 			}
 		} //end loop 2
-		
+
 		// for each weight w_ij in network do
 		//     w_ij <- w_ij + alpha * a_i * delta_j
-		for(int l = layers - 2; l >= 0; l--) { //every layer
+		for(int l = layers - 1; l > 0; l--) {
 			NeuronUnit[] layer = this.getLayerUnits(l);
-			for(int i = 0; i < layer.length; i++) { //every node
-				for(int j = 0; j < layer[i].outgoingConnections.size(); j++) { //every weight
-					double temp = layer[i].getWeight(j) + alpha*layer[i].getOutput()*errors.get(l+1).get(j);
-					layer[i].setWeight(j, temp);
+			for(int i = 0; i < layer.length; i++) {
+				for(int j = 0; j < layer[i].incomingConnections.size(); j++) {
+					layer[i].update(null, j, alpha);
 				}
 			}
-		} //end loop 3
-		
-	} //end backpropagation 
-	
+		}
+		// for(int l = layers - 2; l >= 0; l--) { //every layer
+		// 	NeuronUnit[] layer = this.getLayerUnits(l);
+		// 	for(int i = 0; i < layer.length; i++) { //every node
+		// 		for(int j = 0; j < layer[i].outgoingConnections.size(); j++) { //every weight
+		// 			double temp = layer[i].getWeight(j) + alpha*layer[i].getOutput()*errors.get(l+1).get(j);
+		// 			layer[i].setWeight(j, temp);
+		// 		}
+		// 	}
+		// } //end loop 3
+
+	} //end backpropagation
+
 	/**
 	 * Return true if this MultiLayerFeedForwardNeuralNetwork gets the right answer
 	 * on the given Example.
@@ -258,7 +257,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 	 * unit with the highest activation (the network's ``output'') is the index of the
 	 * 1.0 in the Example's outputs.
 	 * Other things are possible, in which case subclasses can override
-	 * this implementation. 
+	 * this implementation.
 	 */
 	@Override
 	public boolean test(Example example) {
