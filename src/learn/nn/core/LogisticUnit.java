@@ -1,50 +1,102 @@
 package learn.nn.core;
 
-import java.util.List;
-
 /**
- * A LogisticUnit is a Unit that uses a sigmoid
- * activation function.
+ * Base class for the non-input units of a NeuralNetwork.
+ * Do not include an input for the constant a_0=1.0 (AIMA p. 728)
+ * since that will be added automatically.
  */
-public class LogisticUnit extends NeuronUnit {
+abstract public class NeuronUnit extends Unit {
 	
-	/**
-	 * The activation function for a LogisticUnit is a 0-1 sigmoid
-	 * centered at z=0: 1/(1+e^(-z)). (AIMA Fig 18.7)
-	 */
-	@Override
-	public double activation(double z) {
-		return (1/(1+java.lang.Math.exp(-1*z)));
+	public NeuronUnit() {
+		new Connection(new ConstantUnit(1.0), this);
 	}
 	
 	/**
-	 * Derivative of the activation function for a LogisticUnit.
-	 * For g(z)=1/(1+e^(-z)), g'(z)=g(z)*(1-g(z)) (AIMA p. 727).
-	 * @see https://calculus.subwiki.org/wiki/Logistic_function#First_derivative
+	 * Return the weight for this NeuronUnit's i'th input
+	 * (where input 0 is the constant bias).
 	 */
-	public double activationPrime(double z) {
-		double y = activation(z);
-		return y * (1.0 - y);
+	public double getWeight(int i) {
+		return this.incomingConnections.get(i).weight;
+	}
+	
+	/**
+	 * Set the weight for this NeuronUnit's i'th input
+	 * (where input 0 is the constant bias).
+	 */
+	public void setWeight(int i, double w) {
+		this.incomingConnections.get(i).weight = w;
+	}
+	
+	/**
+	 * This NeuronUnit's output value.
+	 */
+	protected double output = 0.0;
+	
+	/**
+	 * Return the output value of this NeuronUnit.
+	 */
+	@Override
+	public double getOutput() {
+		return output;
 	}
 
 	/**
-	 * Update this unit's weights using the logistic regression
-	 * gradient descent learning rule (AIMA Eq 18.8).
-	 * Remember: If there are n input attributes in vector x,
-	 * then there are n+1 weights including the bias weight w_0. 
+	 * Return the weighted sum of this NeuronUnit's inputs.
+	 * This is also used in the backpropagation algorithm which is
+	 * why I broke it out from the run() method.
 	 */
-	@Override
-	public void update(double[] x, double y, double alpha) {
-		// This must be implemented by you
-
-		double wx = this.h_w(x);
-		int i = 0;
-		
-		for(Connection c : this.incomingConnections) {
-			c.weight = c.weight + (alpha*(y-wx)*wx*(1-wx)*x[i]);
-			i++;
+	public double getInputSum() {
+		double sum = 0;
+		for (Connection conn : this.incomingConnections) {
+			sum += conn.weight * conn.src.getOutput();
 		}
-		
-	} //end update
+		return sum;
+	}
+	
+	/**
+	 * Return h_w(x) = Threshold(w \cdot [1,x])
+	 */
+	public double h_w(double[] x) {
+		double wdotx = 0;
+		for (int i=0; i < this.incomingConnections.size(); i++) {
+			double wi = this.incomingConnections.get(i).weight;
+			double xi = (i == 0) ? 1.0 : x[i-1];
+			wdotx += wi * xi;
+		}
+		return activation(wdotx);
+	}
+	
+	/**
+	 * ``Each unit j first computes a weighted sum of its inputs.
+	 * Then it applies an activation function g to this sum to
+	 * derive the output.'' (AIMA p728).
+	 */
+	@Override
+	public void run() {
+		double in_j = this.getInputSum();
+		//System.out.println("NeuronUnit.run: in_j=" + in_j);
+		double a_j = this.activation(in_j);
+		//System.out.println("NeuronUnit.run: a_j=" + a_j);
+		this.output = a_j;
+	}
+	
+	/**
+	 * The activation (threshold) function used by this NeuronUnit.
+	 * This method must be specified by subclassses.
+	 */
+	abstract public double activation(double in);
+	
+	/**
+	 * Update the weights of this NeuronUnit using the given
+	 * input values, the given output value, and learning rate (alpha).
+	 * This method must be specified by subclassses.
+	 */
+	@Override
+	abstract public void update(double[] inputs, double output, double alpha);
+
+	/**
+	 * Error term for this NeuronUnit, used during backprop.
+	 */
+	public double delta;
 	
 }
