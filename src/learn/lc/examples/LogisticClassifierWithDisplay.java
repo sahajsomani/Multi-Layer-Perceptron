@@ -6,7 +6,7 @@ import java.util.List;
 import learn.lc.core.Example;
 import learn.lc.core.LearningRateSchedule;
 import learn.lc.core.LogisticClassifier;
-//import learn.lc.display.ClassifierDisplay;
+import learn.lc.display.ClassifierDisplay;
 
 public class LogisticClassifierWithDisplay {
 	
@@ -27,14 +27,14 @@ public class LogisticClassifierWithDisplay {
 		System.out.println("nsteps: " + nsteps);
 		System.out.println("alpha: " + alpha);
 		
-		//ClassifierDisplay display = new ClassifierDisplay("LogisticClassifier: " + filename);
+		ClassifierDisplay display = new ClassifierDisplay("LogisticClassifier: " + filename);
 		List<Example> examples = Data.readFromFile(filename);
 		int ninputs = examples.get(0).inputs.length; 
 		LogisticClassifier classifier = new LogisticClassifier(ninputs) {
 			public void trainingReport(List<Example> examples, int stepnum, int nsteps) {
 				double oneMinusError = 1.0-squaredErrorPerSample(examples);
 				System.out.println(stepnum + "\t" + oneMinusError);
-				//display.addPoint(stepnum/(double)nsteps, oneMinusError);
+				display.addPoint(stepnum/(double)nsteps, oneMinusError);
 			}
 		};
 		if (alpha > 0) {

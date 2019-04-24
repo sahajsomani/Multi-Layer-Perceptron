@@ -29,12 +29,19 @@ public class PerceptronUnit extends NeuronUnit {
 	public void update(double[] x, double y, double alpha) {
 		// This must be implemented by you
 		
-		double wx = this.h_w(x);
-		int i = 0;
+//		double wx = this.h_w(x);
+//		int i = 0;
+//		
+//		for(Connection c : this.incomingConnections) {
+//			c.weight = c.weight + (alpha*(y-wx)*x[i]);
+//			i++;
+//		}
 		
-		for(Connection c : this.incomingConnections) {
-			c.weight = c.weight + (alpha*(y-wx)*x[i]);
-			i++;
+		double wx = this.h_w(x);
+		for (int i=0; i < this.incomingConnections.size(); i++) {
+			double wi = this.incomingConnections.get(i).weight;
+			double xi = (i == 0) ? 1.0 : x[i-1];
+			setWeight(i, wi + (alpha*(y-wx)*xi));
 		}
 	} //end update
 }

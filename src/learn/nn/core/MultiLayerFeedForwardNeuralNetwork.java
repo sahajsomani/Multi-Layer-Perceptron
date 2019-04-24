@@ -180,15 +180,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 	 * (3) ``Propagating deltas backward from output layer to input layer''
 	 * (4) ``Update every weight in network using deltas''
 	 */
-	public void backprop(Example example, double alpha) {
-		ArrayList<ArrayList<Double>> errors = new ArrayList<ArrayList<Double>>();
-		for(int i = 0; i < this.layers.length; i++) {
-			errors.add(new ArrayList<Double>());
-			for(int j = 0; j < this.layers[i].length; j++) {
-				errors.get(i).add(0.0);
-			}
-		}
-		
+	public void backprop(Example example, double alpha) {		
 		// This must be implemented by you
 
 		// for each node j in the output layer do
@@ -199,53 +191,59 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 		// for each weight w_ij in network do
 		//     w_ij <- w_ij + alpha * a_i * delta_j
 		
-		NeuronUnit[] output = this.getOutputUnits();
-		double[] delta_output = new double[output.length];
+		NeuronUnit[] outputLayer = this.getOutputUnits();
+		double[] output = example.outputs; //actual y values
+		//double[] output = this.getOutputValues();
 		
 		// for each node j in the output layer do
 		//     Delta[j] <- g'(in_j) \times (y_j - a_j)
-		for(int j = 0; j < output.length; j++) {
-			double z = output[j].getInputSum();
-			double g = output[j].activation(z);
+		int counter = 0;
+		for(NeuronUnit n : outputLayer) {
+			double g = n.getOutput();
 			double gPrime = g*(1-g);
-			double a = output[j].getOutput();
-			double y = example.outputs[j];
-			double error = y - a;
-			errors.get(this.layers.length - 1).set(j, gPrime * error);
-		} //end loop 1
+			double error = output[counter] - n.getOutput();
+			n.delta = gPrime*error;
+			counter++;
+		}
+
 		
 		// for l = L-1 to 1 do
 		//     for each node i in layer l do 
 		//         Delta[i] <- g'(in_i) * \sum_j w_ij Delta[j]
 		int layers = this.getNumLayers();
-		for(int l = layers - 2; l > 0; l--) {
+		for(int l = layers - 2; l > 0; l--) { //every layer
 			NeuronUnit[] layer = this.getLayerUnits(l);
-			
-			for(int i = 0; i < layer.length; i++) {
-				double z = layer[i].getInputSum();
-				double g = layer[i].activation(z);
-				double gPrime = g*(1-g);
-				
-				double wTimesDelta = 0;
-				for(int j = 0; j < layer[i].outgoingConnections.size(); j++) {
-					wTimesDelta += layer[i].getWeight(j) * errors.get(l+1).get(j); 
+			for(NeuronUnit n : layer) {
+				double gPrime = n.getOutput()*(1-n.getOutput());
+				double weighted_error = 0;
+				for(Connection c : n.outgoingConnections) {
+					NeuronUnit destination = (NeuronUnit)c.dst;
+					weighted_error += c.weight*destination.delta;
 				}
-				errors.get(l).set(i, gPrime * wTimesDelta);
+				n.delta = gPrime*weighted_error;
 			}
-		} //end loop 2
+		}
+		
 		
 		// for each weight w_ij in network do
 		//     w_ij <- w_ij + alpha * a_i * delta_j
-		for(int l = layers - 2; l >= 0; l--) { //every layer
+		for(int l = layers - 2; l > 0; l--) { //every layer
 			NeuronUnit[] layer = this.getLayerUnits(l);
-			for(int i = 0; i < layer.length; i++) { //every node
-				for(int j = 0; j < layer[i].outgoingConnections.size(); j++) { //every weight
-					double temp = layer[i].getWeight(j) + alpha*layer[i].getOutput()*errors.get(l+1).get(j);
-					layer[i].setWeight(j, temp);
+			for(NeuronUnit n : layer) { //each neuron in layer
+				for(Connection c : n.outgoingConnections) { //each connection which has a weight
+					NeuronUnit source = (NeuronUnit)c.src;
+					NeuronUnit destination = (NeuronUnit)c.dst;
+					c.weight = c.weight + (alpha*source.getOutput()*destination.delta); //update weight
 				}
 			}
-		} //end loop 3
-		
+		}
+		for(Unit n : this.getInputUnits()) {
+			for(Connection c : n.outgoingConnections) { //each connection which has a weight
+				Unit source = c.src;
+				NeuronUnit destination = (NeuronUnit)c.dst;
+				c.weight = c.weight + (alpha*source.getOutput()*destination.delta); //update weight
+			}
+		}
 	} //end backpropagation 
 	
 	/**

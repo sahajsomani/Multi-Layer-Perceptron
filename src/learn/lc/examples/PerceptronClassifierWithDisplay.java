@@ -6,7 +6,7 @@ import java.util.List;
 import learn.lc.core.Example;
 import learn.lc.core.LearningRateSchedule;
 import learn.lc.core.PerceptronClassifier;
-//import learn.lc.display.ClassifierDisplay;
+import learn.lc.display.ClassifierDisplay;
 
 public class PerceptronClassifierWithDisplay {
 
@@ -27,14 +27,14 @@ public class PerceptronClassifierWithDisplay {
 		System.out.println("nsteps: " + nsteps);
 		System.out.println("alpha: " + alpha);
 		
-		//ClassifierDisplay display = new ClassifierDisplay("PerceptronClassifier: " + filename);
+		ClassifierDisplay display = new ClassifierDisplay("PerceptronClassifier: " + filename);
 		List<Example> examples = Data.readFromFile(filename);
 		int ninputs = examples.get(0).inputs.length; 
 		PerceptronClassifier classifier = new PerceptronClassifier(ninputs) {
 			public void trainingReport(List<Example> examples, int stepnum, int nsteps) {
 				double accuracy = accuracy(examples);
 				System.out.println(stepnum + "\t" + accuracy);
-				//display.addPoint(stepnum/(double)nsteps, accuracy);
+				display.addPoint(stepnum/(double)nsteps, accuracy);
 			}
 		};
 		if (alpha > 0) {
