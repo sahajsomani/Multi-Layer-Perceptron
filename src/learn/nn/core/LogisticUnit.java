@@ -37,9 +37,7 @@ public class LogisticUnit extends NeuronUnit {
 	public void update(double[] x, double y, double alpha) {
 		// This must be implemented by you
 		// w_ij <- w_ij + alpha * a_i * delta_j
-		double w_ij = this.incomingConnections.get((int)y).weight;
-		double a_i = (y == 0) ? 1.0 : this.incomingConnections.get((int)y).src.getOutput();
-		this.setWeight((int)y, w_ij + alpha * a_i * this.delta);
+
 	} //end update
 
 }

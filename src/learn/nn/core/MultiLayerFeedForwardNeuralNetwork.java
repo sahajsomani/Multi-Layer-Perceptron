@@ -231,7 +231,9 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			NeuronUnit[] layer = this.getLayerUnits(l);
 			for(int i = 0; i < layer.length; i++) {
 				for(int j = 0; j < layer[i].incomingConnections.size(); j++) {
-					layer[i].update(null, j, alpha);
+					double w_ij = layer[i].incomingConnections.get(j).getWeight();
+					double a_i = (j == 0) ? 1 : layer[i].incomingConnections.get(j).src.getOutput();
+					layer[i].setWeight(j, w_ij + alpha * a_i * layer[i].delta);
 				}
 			}
 		}
