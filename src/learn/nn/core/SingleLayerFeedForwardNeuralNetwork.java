@@ -10,7 +10,7 @@ import learn.nn.core.Example;
  * (AIMA Section 18.7.2).
  */
 abstract public class SingleLayerFeedForwardNeuralNetwork extends FeedForwardNeuralNetwork {
-	
+
 	/**
 	 * Construct and return a new SingleLayerFeedForwardNeuralNetwork with the given
 	 * InputUnits for inputs and NeuronUnits for outputs. It's up
@@ -22,11 +22,11 @@ abstract public class SingleLayerFeedForwardNeuralNetwork extends FeedForwardNeu
 		this.layers[0] = inputs;
 		this.layers[1] = outputs;
 	}
-	
+
 	/**
 	 * Print this SingleLayerFeedForwardNeuralNetwork to stdout.
 	 * We output the weights on the output units in tab-delimited format:
-	 * UNITNUM w_0 w_1 ... w_n. 
+	 * UNITNUM w_0 w_1 ... w_n.
 	 */
 	public void dump() {
 		NeuronUnit[] outputs = this.getOutputUnits();
@@ -39,7 +39,7 @@ abstract public class SingleLayerFeedForwardNeuralNetwork extends FeedForwardNeu
 			System.out.println();
 		}
 	}
-	
+
 	/**
 	 * Train this SingleLayerFeedForwardNeuralNetwork on the given Examples,
 	 * using given learning rate alpha.
@@ -48,8 +48,11 @@ abstract public class SingleLayerFeedForwardNeuralNetwork extends FeedForwardNeu
 	 */
 	public void train(List<Example> examples, double alpha) {
 		// This must be implemented by you
+		for(Example e : examples) {
+			train(e, alpha);
+		}
 	}
-	
+
 	/**
 	 * Train this SingleLayerFeedForwardNeuralNetwork on the given Example,
 	 * using given learning rate alpha.
@@ -61,7 +64,7 @@ abstract public class SingleLayerFeedForwardNeuralNetwork extends FeedForwardNeu
 			outputs[j].update(example.inputs, example.outputs[j], alpha);
 		}
 	}
-	
+
 	/**
 	 * Run a k-fold cross-validation experiment on this SingleLayerFeedForwardNeuralNetwork using
 	 * the given Examples and return the average accuracy over the k trials.

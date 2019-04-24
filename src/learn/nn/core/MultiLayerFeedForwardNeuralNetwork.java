@@ -12,7 +12,7 @@ import learn.nn.core.Example;
  * (AIMA Section 18.7.3).
  */
 abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeuralNetwork {
-	
+
 	/**
 	 * Construct and return a new MultiLayerFeedForwardNeuralNetwork with the given
 	 * layers of Units (InputUnits in the first layer, LogisticUnits in other layers).
@@ -22,7 +22,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 	public MultiLayerFeedForwardNeuralNetwork(Unit[][] layers) {
 		super(layers);
 	}
-	
+
 	/**
 	 * Construct and return a new MultiLayerFeedForwardNeuralNetwork with the given
 	 * number of input units, hidden units (array of lengths, one for each layer),
@@ -56,7 +56,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			}
 		}
 	}
-	
+
 	/**
 	 * Construct and return a new MultiLayerFeedForwardNeuralNetwork with the given
 	 * number of input units, a single hidden layer of the given length,
@@ -65,7 +65,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 	public MultiLayerFeedForwardNeuralNetwork(int ninputs, int nhiddens, int noutputs) {
 		this(ninputs, new int[]{ nhiddens }, noutputs);
 	}
-	
+
 	/**
 	 * Print this MultiLayerFeedForwardNeuralNetwork to stdout.
 	 * All we print the weights of each unit in each non-input layer in
@@ -85,7 +85,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			}
 		}
 	}
-	
+
 	/**
 	 * Output of a MultiLayerFeedForwardNeuralNetwork is the index of output unit
 	 * (i.e., class label) with the maximum activation.
@@ -118,7 +118,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			notifyTrainingEpochCompleted(epoch);
 		}
 	}
-	
+
 	/**
 	 * AIMA Fig 18.24 says weights should each be initialized to
 	 * ``a small random number.'' WTF? It also has that step inside
@@ -137,7 +137,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			}
 		}
 	}
-	
+
 	protected Random random = new Random();
 
 	/**
@@ -151,7 +151,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 		propagate(example);
 		backprop(example, alpha);
 	}
-	
+
 	/**
 	 * AIMA Fig 18.14: Body of main loop, step 1:
 	 * ``Propagate the inputs forward to compute the outputs.''
@@ -173,27 +173,19 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			}
 		}
 	}
-		
+
 	/**
 	 * AIMA Fig 18.14 body of loop after propagating inputs forward:
 	 * (2) Computing the error vector delta
 	 * (3) ``Propagating deltas backward from output layer to input layer''
 	 * (4) ``Update every weight in network using deltas''
 	 */
-	public void backprop(Example example, double alpha) {		
-		// This must be implemented by you
 
-		// for each node j in the output layer do
-		//     Delta[j] <- g'(in_j) \times (y_j - a_j)
-		// for l = L-1 to 1 do
-		//     for each node i in layer l do 
-		//         Delta[i] <- g'(in_i) * \sum_j w_ij Delta[j]
-		// for each weight w_ij in network do
-		//     w_ij <- w_ij + alpha * a_i * delta_j
+	public void backprop(Example example, double alpha) {
+		// This must be implemented by you
 		
 		NeuronUnit[] outputLayer = this.getOutputUnits();
 		double[] output = example.outputs; //actual y values
-		//double[] output = this.getOutputValues();
 		
 		// for each node j in the output layer do
 		//     Delta[j] <- g'(in_j) \times (y_j - a_j)
@@ -206,9 +198,8 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 			counter++;
 		}
 
-		
 		// for l = L-1 to 1 do
-		//     for each node i in layer l do 
+		//     for each node i in layer l do
 		//         Delta[i] <- g'(in_i) * \sum_j w_ij Delta[j]
 		int layers = this.getNumLayers();
 		for(int l = layers - 2; l > 0; l--) { //every layer
@@ -256,7 +247,7 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 	 * unit with the highest activation (the network's ``output'') is the index of the
 	 * 1.0 in the Example's outputs.
 	 * Other things are possible, in which case subclasses can override
-	 * this implementation. 
+	 * this implementation.
 	 */
 	@Override
 	public boolean test(Example example) {
