@@ -218,6 +218,8 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 		
 		// for each weight w_ij in network do
 		//     w_ij <- w_ij + alpha * a_i * delta_j
+		
+		// Changing weights of all outgoing connections from all nodes of each layer besides the input layer
 		for(int l = layers - 2; l > 0; l--) { //every layer
 			NeuronUnit[] layer = this.getLayerUnits(l);
 			for(NeuronUnit n : layer) { //each neuron in layer
@@ -228,11 +230,21 @@ abstract public class MultiLayerFeedForwardNeuralNetwork extends FeedForwardNeur
 				}
 			}
 		}
+		// Changing weights of all outgoing connections from all nodes of the input layer
 		for(Unit n : this.getInputUnits()) {
 			for(Connection c : n.outgoingConnections) { //each connection which has a weight
 				Unit source = c.src;
 				NeuronUnit destination = (NeuronUnit)c.dst;
 				c.weight = c.weight + (alpha*source.getOutput()*destination.delta); //update weight
+			}
+		}
+		
+		// Changing each bias weight for every node in the network
+		for(int l = layers - 1; l > 0; l--) { //every layer
+			NeuronUnit[] layer = this.getLayerUnits(l);
+			for(NeuronUnit n : layer) { //each neuron in layer
+				List<Connection> nodes = n.incomingConnections;
+				nodes.get(0).weight = nodes.get(0).weight + (alpha*n.delta);
 			}
 		}
 	} //end backpropagation 
